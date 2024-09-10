@@ -1,0 +1,7 @@
+#!pip install --upgrade setuptools
+#!pip install --upgrade pip
+#!pip install -U ultralytics
+
+#!pip install torch sahi yolov8
+#!pip install -U imantics
+#!pip install -U fiftyone
