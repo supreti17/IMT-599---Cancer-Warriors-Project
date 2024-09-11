@@ -7,6 +7,7 @@
 5. [Step 5: Train model](#step-5-train-model)
 6. [Step 6: Validate trained model](#step-6-validate-trained-model)
 7. [Step 7: Repeat steps 5-6 with different versions of YOLO model and parameters until the requirements are met](#step-7-repeat-steps-5-6-with-different-versions-of-yolo-model-and-parameters-until-the-requirements-are-met)
+8. [Findings and Recommendations](#findings-and-recommendations)
 
 ---------------------------------------------------------------------------------
 ### Step 1: Export images from QuPath and setup directories:
@@ -177,35 +178,6 @@ cv2.drawContours(image, [s.astype(np.int32) for s in segment], -1, (0, 0, 255), 
 cv2.imwrite("1.jpg", image)
 ```
 
-    [ WARN:0@0.028] global loadsave.cpp:241 findDecoder imread_('datasets/seg/train/images/NP_MIT_0004_A4.27 [d=1.76228,x=38573,y=36543,w=1128,h=1127].jpg'): can't open/read file: check file path/integrity
-
-
-
-    ---------------------------------------------------------------------------
-
-    FileNotFoundError                         Traceback (most recent call last)
-
-    Cell In[2], line 9
-          5 img_name = "NP_MIT_0004_A4.27 [d=1.76228,x=38573,y=36543,w=1128,h=1127]"
-          7 image = cv2.imread(img_path0 + "images/" + img_name + ".jpg")
-    ----> 9 with open(img_path0 + "labels/" + img_name + ".txt") as f:
-         10     segment = [np.array(x.split(), dtype=np.float32)[1:].reshape(-1, 2) for x in f.read().strip().splitlines() if len(x)]
-         11 h, w = image.shape[:2]
-
-
-    File /opt/anaconda3/lib/python3.12/site-packages/IPython/core/interactiveshell.py:324, in _modified_open(file, *args, **kwargs)
-        317 if file in {0, 1, 2}:
-        318     raise ValueError(
-        319         f"IPython won't let you open fd={file} by default "
-        320         "as it is likely to crash IPython. If you know what you are doing, "
-        321         "you can use builtins' open."
-        322     )
-    --> 324 return io_open(file, *args, **kwargs)
-
-
-    FileNotFoundError: [Errno 2] No such file or directory: 'datasets/seg/train/labels/NP_MIT_0004_A4.27 [d=1.76228,x=38573,y=36543,w=1128,h=1127].txt'
-
-
 ---------------------------------------------------------------------------------
 ### Step 5: Train model:
 ---------------------------------------------------------------------------------
@@ -301,9 +273,17 @@ After validating the images and labels, we proceeded to model training in Step 5
 
 Once the model was trained, we validated its performance using the prediction function. Although it detected some cells, it missed others. To enhance detection, we applied SAHI inference (Step 6), which improves detection by dividing the image into smaller sections, processing each section, and then reconstructing the full image with enhanced predictions.
 
-Repeat Steps 5 and 6 with different parameters and models as needed until deployment readiness. Due to time constraints and an incomplete model, we could not progress further. To improve the model, consider the following recommendations:
+Repeat Steps 5 and 6 with different parameters and models as needed until deployment readiness. You can find some of our recent results on the trained models in 'result-yolov8n-320-300epoch' (trained on image size of 320 x 320 for 300 epochs) and 'result-yolov8-seg-640-300epoch' (trained on image size of 640 x 640 for 300 epochs) folders. Due to time constraints and an incomplete model, we could not progress further. To improve the model, consider the following recommendations:
 
-- Increase Input Data: Ultralytics suggests using at least 1500 images and 10,000 annotations per class.
+- Increase Input Data: [Ultralytics recommends using at least 1,500 images and 10,000 annotations per class.](https://docs.ultralytics.com/yolov5/tutorials/tips_for_best_training_results/)
+
 - Explore Newer Models: Test newer YOLO versions (v9, v10) and other models like Mask R-CNN or RetinaNet.
+- Experiment With Input Data: Experiment Lower the pixels/resolution of the images when exporting them on Step 1 (for example: 640 x 640). Lowering image resolutions increased the detection rate in our case. Results are in 'result...' folders in this repository with best trained model.
+- Optimize Conversion Functions: Similarly, consider optimizing the conversion function from image masks to YOLO label formt on Step 3.
 - Use Polygon Annotations: Consider models compatible with polygon-shaped annotations for improved accuracy. Mask R-CNN supports polygons and may offer better performance than YOLO, which converts polygons into rectangles.
 - Utilize Cloud Services: For more computing power, use platforms like Google Colab Pro or Kaggle, which can significantly speed up the training process, especially under tight deadlines.
+
+
+```python
+
+```
